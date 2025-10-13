@@ -194,7 +194,7 @@ export default function AdminDashboard({
               </thead>
               <tbody>
                 {attendance.map(record => {
-                  const user = users.find(u => u.id === record.userId);
+                  const user = users.find(u => u.id === record.user_id);
                   return (
                     <tr key={record.id} className="border-b border-gray-700 hover:bg-gray-700 transition">
                       <td className="px-4 py-3 text-white font-bold">{user?.name || 'Unknown'}</td>
