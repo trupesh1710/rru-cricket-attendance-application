@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createClient } from '@supabase/supabase-js';
 import LoginPage from './components/LoginPage';
 import RegisterPage from './components/RegisterPage';
 import ResetPasswordPage from './components/ResetPasswordPage';
@@ -6,18 +7,46 @@ import UserDashboard from './components/UserDashboard';
 import AdminLoginPage from './components/AdminLoginPage';
 import AdminDashboard from './components/AdminDashboard';
 
+// Supabase client setup
+const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
+const supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY;
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+if (!supabaseAnonKey) {
+  console.log(JSON.stringify({"message":"No API key found in request","hint":"No `apikey` request header or url param was found."}));
+}
+
 export default function AttendanceApp() {
   // Global state
   const [isAdmin, setIsAdmin] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
-  const [users, setUsers] = useState([
-    { id: 1, name: 'Ali Khan', email: 'ali@rru.com', password: 'pass123' },
-    { id: 2, name: 'Sara Ahmed', email: 'sara@rru.com', password: 'pass123' }
-  ]);
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const [attendance, setAttendance] = useState([
     { id: 1, userId: 1, date: '2025-10-10', time: '10:30 AM', status: 'Present', location: 'Ground A' },
     { id: 2, userId: 2, date: '2025-10-10', time: '10:45 AM', status: 'Present', location: 'Ground A' }
   ]);
+
+  // Fetch users from Supabase
+  const fetchUsers = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.from('users').select('*');
+      if (error) throw error;
+      setUsers(data || []);
+      setError('');
+    } catch (err) {
+      setError(err.message);
+      console.error('Error fetching users:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
   const [attendanceSession, setAttendanceSession] = useState({
     active: true,
     location: { lat: 31.5497, lng: 74.3436 },
@@ -77,18 +106,35 @@ export default function AttendanceApp() {
   };
 
   // USER FUNCTIONS
-  const handleUserLogin = () => {
-    const user = users.find(u => u.email === loginForm.email && u.password === loginForm.password);
-    if (user) {
-      setCurrentUser(user);
+  const handleUserLogin = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('email', loginForm.email)
+        .eq('password', loginForm.password)
+        .eq('role', 'user')
+        .single();
+
+      if (error || !data) {
+        alert('Invalid email or password');
+        return;
+      }
+
+      setCurrentUser(data);
       setPage('user-dashboard');
       setLoginForm({ email: '', password: '' });
-    } else {
-      alert('Invalid email or password');
+      setError('');
+    } catch (err) {
+      setError(err.message);
+      alert('Login failed: ' + err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleUserRegister = () => {
+  const handleUserRegister = async () => {
     if (registerForm.password !== registerForm.confirmPassword) {
       alert('Passwords do not match');
       return;
@@ -97,39 +143,81 @@ export default function AttendanceApp() {
       alert('Please fill all fields');
       return;
     }
-    if (users.find(u => u.email === registerForm.email)) {
-      alert('Email already registered');
-      return;
+
+    setLoading(true);
+    try {
+      // Check if email already exists
+      const { data: existingUser, error: checkError } = await supabase
+        .from('users')
+        .select('id')
+        .eq('email', registerForm.email)
+        .single();
+
+      if (existingUser) {
+        alert('Email already registered');
+        return;
+      }
+
+      // Insert new user
+      const { data, error } = await supabase
+        .from('users')
+        .insert([
+          {
+            name: registerForm.name,
+            email: registerForm.email,
+            username: registerForm.email, // Use email as username
+            password: registerForm.password,
+            role: 'user'
+          }
+        ])
+        .select();
+
+      if (error) throw error;
+
+      alert('Registration successful! Please login.');
+      setPage('login');
+      setRegisterForm({ name: '', email: '', password: '', confirmPassword: '' });
+      setError('');
+      fetchUsers(); // Refresh users list
+    } catch (err) {
+      setError(err.message);
+      alert('Registration failed: ' + err.message);
+    } finally {
+      setLoading(false);
     }
-    const newUser = {
-      id: Math.max(...users.map(u => u.id)) + 1,
-      name: registerForm.name,
-      email: registerForm.email,
-      password: registerForm.password
-    };
-    setUsers([...users, newUser]);
-    alert('Registration successful! Please login.');
-    setPage('login');
-    setRegisterForm({ name: '', email: '', password: '', confirmPassword: '' });
   };
 
-  const handleResetPassword = () => {
+  const handleResetPassword = async () => {
     if (resetForm.newPassword !== resetForm.confirmPassword) {
       alert('Passwords do not match');
       return;
     }
-    const user = users.find(u => u.email === resetForm.email);
-    if (!user) {
-      alert('Email not found');
-      return;
+
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .update({ password: resetForm.newPassword })
+        .eq('email', resetForm.email)
+        .select();
+
+      if (error) throw error;
+
+      if (data.length === 0) {
+        alert('Email not found');
+        return;
+      }
+
+      alert('Password reset successful!');
+      setPage('login');
+      setResetForm({ email: '', newPassword: '', confirmPassword: '' });
+      setError('');
+    } catch (err) {
+      setError(err.message);
+      alert('Password reset failed: ' + err.message);
+    } finally {
+      setLoading(false);
     }
-    const updatedUsers = users.map(u =>
-      u.email === resetForm.email ? { ...u, password: resetForm.newPassword } : u
-    );
-    setUsers(updatedUsers);
-    alert('Password reset successful!');
-    setPage('login');
-    setResetForm({ email: '', newPassword: '', confirmPassword: '' });
   };
 
   const handleMarkAttendance = () => {
@@ -172,41 +260,103 @@ export default function AttendanceApp() {
   };
 
   // ADMIN FUNCTIONS
-  const handleAdminLogin = () => {
-    if (adminLogin.username === ADMIN_USERNAME && adminLogin.password === ADMIN_PASSWORD) {
+  const handleAdminLogin = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('username', adminLogin.username)
+        .eq('password', adminLogin.password)
+        .eq('role', 'admin')
+        .single();
+
+      if (error || !data) {
+        alert('Invalid admin credentials');
+        return;
+      }
+
       setIsAdmin(true);
       setPage('admin-dashboard');
       setAdminLogin({ username: '', password: '' });
-    } else {
-      alert('Invalid admin credentials');
+      setError('');
+    } catch (err) {
+      setError(err.message);
+      alert('Admin login failed: ' + err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleAddUser = () => {
+  const handleAddUser = async () => {
     if (!newUserForm.name || !newUserForm.email || !newUserForm.password) {
       alert('Please fill all fields');
       return;
     }
-    if (users.find(u => u.email === newUserForm.email)) {
-      alert('Email already exists');
-      return;
+
+    setLoading(true);
+    try {
+      // Check if email already exists
+      const { data: existingUser, error: checkError } = await supabase
+        .from('users')
+        .select('id')
+        .eq('email', newUserForm.email)
+        .single();
+
+      if (existingUser) {
+        alert('Email already exists');
+        return;
+      }
+
+      // Insert new user
+      const { data, error } = await supabase
+        .from('users')
+        .insert([
+          {
+            name: newUserForm.name,
+            email: newUserForm.email,
+            username: newUserForm.email, // Use email as username
+            password: newUserForm.password,
+            role: 'user'
+          }
+        ])
+        .select();
+
+      if (error) throw error;
+
+      setNewUserForm({ name: '', email: '', password: '' });
+      alert('User added successfully');
+      fetchUsers(); // Refresh users list
+      setError('');
+    } catch (err) {
+      setError(err.message);
+      alert('Failed to add user: ' + err.message);
+    } finally {
+      setLoading(false);
     }
-    const newUser = {
-      id: Math.max(...users.map(u => u.id), 0) + 1,
-      name: newUserForm.name,
-      email: newUserForm.email,
-      password: newUserForm.password
-    };
-    setUsers([...users, newUser]);
-    setNewUserForm({ name: '', email: '', password: '' });
-    alert('User added successfully');
   };
 
-  const handleDeleteUser = (userId) => {
+  const handleDeleteUser = async (userId) => {
     // eslint-disable-next-line no-restricted-globals
     if (window.confirm('Are you sure you want to delete this user?')) {
-      setUsers(users.filter(u => u.id !== userId));
-      setAttendance(attendance.filter(a => a.userId !== userId));
+      setLoading(true);
+      try {
+        const { error } = await supabase
+          .from('users')
+          .delete()
+          .eq('id', userId);
+
+        if (error) throw error;
+
+        fetchUsers(); // Refresh users list
+        setAttendance(attendance.filter(a => a.userId !== userId));
+        setError('');
+      } catch (err) {
+        setError(err.message);
+        alert('Failed to delete user: ' + err.message);
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -215,14 +365,31 @@ export default function AttendanceApp() {
     setEditForm({ name: user.name, email: user.email, password: user.password });
   };
 
-  const handleSaveEdit = () => {
-    const updatedUsers = users.map(u =>
-      u.id === editUser ? { ...u, name: editForm.name, email: editForm.email, password: editForm.password } : u
-    );
-    setUsers(updatedUsers);
-    setEditUser(null);
-    setEditForm({ name: '', email: '', password: '' });
-    alert('User updated successfully');
+  const handleSaveEdit = async () => {
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from('users')
+        .update({
+          name: editForm.name,
+          email: editForm.email,
+          password: editForm.password
+        })
+        .eq('id', editUser);
+
+      if (error) throw error;
+
+      fetchUsers(); // Refresh users list
+      setEditUser(null);
+      setEditForm({ name: '', email: '', password: '' });
+      alert('User updated successfully');
+      setError('');
+    } catch (err) {
+      setError(err.message);
+      alert('Failed to update user: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (page === 'login') {
