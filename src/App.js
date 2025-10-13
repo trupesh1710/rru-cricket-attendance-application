@@ -455,16 +455,19 @@ export default function AttendanceApp() {
     try {
       const { error } = await supabase
         .from('attendance_sessions')
-        .update({
+        .upsert({
+          id: 1,
           active: attendanceSession.active,
           location_lat: attendanceSession.location.lat,
           location_lng: attendanceSession.location.lng,
           radius: attendanceSession.radius,
           area: attendanceSession.area
-        })
-        .eq('id', 1);
+        });
 
       if (error) throw error;
+
+      // Refresh the attendance session data after saving
+      await fetchAttendanceSession();
 
       alert('Attendance session settings saved successfully!');
       setError('');
