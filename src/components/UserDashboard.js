@@ -15,7 +15,7 @@ export default function UserDashboard({
   calculateDistance,
   handleMarkAttendance
 }) {
-  const userAttendance = attendance.filter(a => a.userId === currentUser.id);
+  const userAttendance = attendance.filter(a => a.user_id === currentUser.id);
   const presentCount = userAttendance.filter(a => a.status === 'Present').length;
 
   return (

@@ -19,7 +19,8 @@ export default function AdminDashboard({
   editUser,
   setEditUser,
   editForm,
-  setEditForm
+  setEditForm,
+  saveAttendanceSession
 }) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black">
@@ -287,7 +288,7 @@ export default function AdminDashboard({
             </div>
 
             <button
-              onClick={() => alert('Settings saved successfully!')}
+              onClick={saveAttendanceSession}
               className="bg-gradient-to-r from-purple-600 to-purple-700 text-white px-6 py-3 rounded-lg hover:from-purple-700 hover:to-purple-800 font-black text-lg shadow-lg transform hover:scale-105 transition"
             >
               💾 SAVE SETTINGS

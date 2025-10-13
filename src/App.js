@@ -23,10 +23,7 @@ export default function AttendanceApp() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [attendance, setAttendance] = useState([
-    { id: 1, userId: 1, date: '2025-10-10', time: '10:30 AM', status: 'Present', location: 'Ground A' },
-    { id: 2, userId: 2, date: '2025-10-10', time: '10:45 AM', status: 'Present', location: 'Ground A' }
-  ]);
+  const [attendance, setAttendance] = useState([]);
 
   // Fetch users from Supabase
   const fetchUsers = async () => {
@@ -44,15 +41,54 @@ export default function AttendanceApp() {
     }
   };
 
-  useEffect(() => {
-    fetchUsers();
-  }, []);
+  // Fetch attendance from Supabase
+  const fetchAttendance = async () => {
+    try {
+      const { data, error } = await supabase.from('attendance').select('*');
+      if (error) throw error;
+      setAttendance(data || []);
+    } catch (err) {
+      console.error('Error fetching attendance:', err);
+    }
+  };
+
+  // Fetch attendance session from Supabase
+  const fetchAttendanceSession = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('attendance_sessions')
+        .select('*')
+        .eq('id', 1)
+        .single();
+
+      if (error) throw error;
+
+      if (data) {
+        setAttendanceSession({
+          active: data.active,
+          location: { lat: data.location_lat, lng: data.location_lng },
+          radius: data.radius,
+          area: data.area
+        });
+      }
+    } catch (err) {
+      console.error('Error fetching attendance session:', err);
+      // Keep default values if fetch fails
+    }
+  };
+
   const [attendanceSession, setAttendanceSession] = useState({
     active: true,
     location: { lat: 31.5497, lng: 74.3436 },
     radius: 100,
     area: 'RRU Cricket Ground'
   });
+
+  useEffect(() => {
+    fetchUsers();
+    fetchAttendance();
+    fetchAttendanceSession();
+  }, []);
 
   // UI State
   const [page, setPage] = useState('login');
@@ -220,7 +256,7 @@ export default function AttendanceApp() {
     }
   };
 
-  const handleMarkAttendance = () => {
+  const handleMarkAttendance = async () => {
     if (!attendanceSession.active) {
       alert('No active attendance session');
       return;
@@ -238,7 +274,7 @@ export default function AttendanceApp() {
     );
 
     const alreadyMarked = attendance.find(
-      a => a.userId === currentUser.id && a.date === new Date().toISOString().split('T')[0]
+      a => a.user_id === currentUser.id && a.date === new Date().toISOString().split('T')[0]
     );
     if (alreadyMarked) {
       alert('Attendance already marked for today');
@@ -247,16 +283,28 @@ export default function AttendanceApp() {
 
     const status = distance > attendanceSession.radius ? 'Absent' : 'Present';
 
-    const newAttendance = {
-      id: Math.max(...attendance.map(a => a.id), 0) + 1,
-      userId: currentUser.id,
-      date: new Date().toISOString().split('T')[0],
-      time: new Date().toLocaleTimeString(),
-      status: status,
-      location: attendanceSession.area
-    };
-    setAttendance([...attendance, newAttendance]);
-    alert(`Attendance marked as ${status}!`);
+    try {
+      const { data, error } = await supabase
+        .from('attendance')
+        .insert([
+          {
+            user_id: currentUser.id,
+            date: new Date().toISOString().split('T')[0],
+            time: new Date().toLocaleTimeString(),
+            status: status,
+            location: attendanceSession.area
+          }
+        ])
+        .select();
+
+      if (error) throw error;
+
+      fetchAttendance(); // Refresh attendance list
+      alert(`Attendance marked as ${status}!`);
+    } catch (err) {
+      console.error('Error marking attendance:', err);
+      alert('Failed to mark attendance: ' + err.message);
+    }
   };
 
   // ADMIN FUNCTIONS
@@ -341,15 +389,24 @@ export default function AttendanceApp() {
     if (window.confirm('Are you sure you want to delete this user?')) {
       setLoading(true);
       try {
-        const { error } = await supabase
+        // Delete attendance records first
+        const { error: attendanceError } = await supabase
+          .from('attendance')
+          .delete()
+          .eq('user_id', userId);
+
+        if (attendanceError) throw attendanceError;
+
+        // Then delete the user
+        const { error: userError } = await supabase
           .from('users')
           .delete()
           .eq('id', userId);
 
-        if (error) throw error;
+        if (userError) throw userError;
 
         fetchUsers(); // Refresh users list
-        setAttendance(attendance.filter(a => a.userId !== userId));
+        fetchAttendance(); // Refresh attendance list
         setError('');
       } catch (err) {
         setError(err.message);
@@ -392,6 +449,33 @@ export default function AttendanceApp() {
     }
   };
 
+  // Save attendance session to Supabase
+  const saveAttendanceSession = async () => {
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from('attendance_sessions')
+        .update({
+          active: attendanceSession.active,
+          location_lat: attendanceSession.location.lat,
+          location_lng: attendanceSession.location.lng,
+          radius: attendanceSession.radius,
+          area: attendanceSession.area
+        })
+        .eq('id', 1);
+
+      if (error) throw error;
+
+      alert('Attendance session settings saved successfully!');
+      setError('');
+    } catch (err) {
+      setError(err.message);
+      alert('Failed to save attendance session settings: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (page === 'login') {
     return <LoginPage loginForm={loginForm} setLoginForm={setLoginForm} showPassword={showPassword} setShowPassword={setShowPassword} handleUserLogin={handleUserLogin} setPage={setPage} />;
   }
@@ -426,25 +510,26 @@ export default function AttendanceApp() {
   }
 
   if (page === 'admin-dashboard' && isAdmin) {
-    return <AdminDashboard 
-      setIsAdmin={setIsAdmin} 
-      setPage={setPage} 
-      users={users} 
-      setUsers={setUsers} 
-      attendance={attendance} 
-      setAttendance={setAttendance} 
-      attendanceSession={attendanceSession} 
-      setAttendanceSession={setAttendanceSession} 
-      newUserForm={newUserForm} 
-      setNewUserForm={setNewUserForm} 
-      handleAddUser={handleAddUser} 
-      handleDeleteUser={handleDeleteUser} 
-      handleEditUser={handleEditUser} 
-      handleSaveEdit={handleSaveEdit} 
-      editUser={editUser} 
-      setEditUser={setEditUser} 
-      editForm={editForm} 
-      setEditForm={setEditForm} 
+    return <AdminDashboard
+      setIsAdmin={setIsAdmin}
+      setPage={setPage}
+      users={users}
+      setUsers={setUsers}
+      attendance={attendance}
+      setAttendance={setAttendance}
+      attendanceSession={attendanceSession}
+      setAttendanceSession={setAttendanceSession}
+      newUserForm={newUserForm}
+      setNewUserForm={setNewUserForm}
+      handleAddUser={handleAddUser}
+      handleDeleteUser={handleDeleteUser}
+      handleEditUser={handleEditUser}
+      handleSaveEdit={handleSaveEdit}
+      editUser={editUser}
+      setEditUser={setEditUser}
+      editForm={editForm}
+      setEditForm={setEditForm}
+      saveAttendanceSession={saveAttendanceSession}
     />;
   }
 
