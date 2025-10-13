@@ -97,7 +97,102 @@ export default function AdminDashboard({
                 </tr>
               </thead>
               <tbody>
-                {users.map(user => (
+                {users.filter(user => user.role === 'user').map(user => (
+                  <tr key={user.id} className="border-b border-gray-700 hover:bg-gray-700 transition">
+                    <td className="px-4 py-3 text-white font-bold">
+                      {editUser === user.id ? (
+                        <input
+                          type="text"
+                          value={editForm.name}
+                          onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                          className="px-2 py-1 border border-gray-500 rounded bg-gray-600 text-white"
+                        />
+                      ) : (
+                        user.name
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-white font-bold">
+                      {editUser === user.id ? (
+                        <input
+                          type="email"
+                          value={editForm.email}
+                          onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                          className="px-2 py-1 border border-gray-500 rounded bg-gray-600 text-white"
+                        />
+                      ) : (
+                        user.email
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-white font-bold">
+                      {editUser === user.id ? (
+                        <input
+                          type="password"
+                          value={editForm.password}
+                          onChange={(e) => setEditForm({ ...editForm, password: e.target.value })}
+                          className="px-2 py-1 border border-gray-500 rounded bg-gray-600 text-white"
+                        />
+                      ) : (
+                        '••••••'
+                      )}
+                    </td>
+                    <td className="px-4 py-3 space-x-2">
+                      {editUser === user.id ? (
+                        <>
+                          <button
+                            onClick={handleSaveEdit}
+                            className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 text-sm font-bold"
+                          >
+                            ✅ Save
+                          </button>
+                          <button
+                            onClick={() => setEditUser(null)}
+                            className="bg-gray-600 text-white px-3 py-1 rounded hover:bg-gray-700 text-sm font-bold"
+                          >
+                            ❌ Cancel
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <button
+                            onClick={() => handleEditUser(user)}
+                            className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 text-sm inline-flex items-center gap-1 font-bold"
+                          >
+                            <Edit2 size={16} /> Edit
+                          </button>
+                          <button
+                            onClick={() => handleDeleteUser(user.id)}
+                            className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 text-sm inline-flex items-center gap-1 font-bold"
+                          >
+                            <Trash2 size={16} /> Delete
+                          </button>
+                        </>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Admins Management */}
+        <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl shadow-xl p-6 border-2 border-red-500">
+          <h2 className="text-2xl font-black mb-4 text-red-400 flex items-center gap-2">
+            <Users size={28} /> MANAGE ADMINS
+          </h2>
+
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gradient-to-r from-red-700 to-red-800">
+                <tr>
+                  <th className="px-4 py-3 text-left text-white font-black">Name</th>
+                  <th className="px-4 py-3 text-left text-white font-black">Email</th>
+                  <th className="px-4 py-3 text-left text-white font-black">Password</th>
+                  <th className="px-4 py-3 text-left text-white font-black">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {users.filter(user => user.role === 'admin').map(user => (
                   <tr key={user.id} className="border-b border-gray-700 hover:bg-gray-700 transition">
                     <td className="px-4 py-3 text-white font-bold">
                       {editUser === user.id ? (
@@ -307,10 +402,14 @@ export default function AdminDashboard({
         </div>
 
         {/* Statistics */}
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid md:grid-cols-4 gap-6">
           <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl shadow-xl p-6 border-2 border-blue-400 text-white text-center">
             <p className="text-lg font-black text-blue-100">TOTAL PLAYERS</p>
-            <p className="text-5xl font-black mt-4 text-yellow-300">{users.length}</p>
+            <p className="text-5xl font-black mt-4 text-yellow-300">{users.filter(u => u.role === 'user').length}</p>
+          </div>
+          <div className="bg-gradient-to-br from-red-600 to-red-700 rounded-2xl shadow-xl p-6 border-2 border-red-400 text-white text-center">
+            <p className="text-lg font-black text-red-100">TOTAL ADMINS</p>
+            <p className="text-5xl font-black mt-4 text-yellow-300">{users.filter(u => u.role === 'admin').length}</p>
           </div>
           <div className="bg-gradient-to-br from-green-600 to-green-700 rounded-2xl shadow-xl p-6 border-2 border-green-400 text-white text-center">
             <p className="text-lg font-black text-green-100">TOTAL ATTENDANCE</p>
@@ -319,7 +418,10 @@ export default function AdminDashboard({
           <div className="bg-gradient-to-br from-purple-600 to-purple-700 rounded-2xl shadow-xl p-6 border-2 border-purple-400 text-white text-center">
             <p className="text-lg font-black text-purple-100">AVG PER PLAYER</p>
             <p className="text-5xl font-black mt-4 text-yellow-300">
-              {users.length > 0 ? (attendance.length / users.length).toFixed(1) : 0}
+              {(() => {
+                const playerCount = users.filter(u => u.role === 'user').length;
+                return playerCount > 0 ? (attendance.length / playerCount).toFixed(1) : 0;
+              })()}
             </p>
           </div>
         </div>
