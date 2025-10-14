@@ -25,7 +25,7 @@ export default function UserDashboard({
       <nav className="bg-gradient-to-r from-orange-600 via-red-600 to-yellow-600 text-white p-4 shadow-2xl">
         <div className="max-w-6xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <span className="w-8 h-8 bg-white text-orange-600 rounded-full flex items-center justify-center font-black">🏏</span>
+            <img src="/rru-logo.png" alt="RRU Logo" className="w-8 h-8" />
             <h1 className="text-3xl font-black">RRU CRICKET</h1>
           </div>
           <button
