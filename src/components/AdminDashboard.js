@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { LogOut, Plus, Users, Calendar, Edit2, Trash2, Zap, Download } from 'lucide-react';
+import { LogOut, Plus, Users, Calendar, Edit2, Trash2, Zap, Download, Eye, EyeOff } from 'lucide-react';
 import * as XLSX from 'xlsx';
 
 export default function AdminDashboard({
@@ -24,6 +24,7 @@ export default function AdminDashboard({
   saveAttendanceSession
 }) {
   const [filterDate, setFilterDate] = useState('');
+  const [showPasswords, setShowPasswords] = useState({});
 
   const handleDownloadExcel = () => {
     const filteredAttendance = attendance.filter(record => !filterDate || record.date === filterDate);
@@ -144,7 +145,7 @@ export default function AdminDashboard({
                         user.email
                       )}
                     </td>
-                    <td className="px-4 py-3 text-white font-bold">
+                    <td className="px-4 py-3 text-white font-bold flex items-center gap-2">
                       {editUser === user.id ? (
                         <input
                           type="password"
@@ -153,7 +154,15 @@ export default function AdminDashboard({
                           className="px-2 py-1 border border-gray-500 rounded bg-gray-600 text-white"
                         />
                       ) : (
-                        '••••••'
+                        <>
+                          {showPasswords[user.id] ? user.password : '••••••'}
+                          <button
+                            onClick={() => setShowPasswords(prev => ({ ...prev, [user.id]: !prev[user.id] }))}
+                            className="text-blue-400 hover:text-blue-300"
+                          >
+                            {showPasswords[user.id] ? <EyeOff size={16} /> : <Eye size={16} />}
+                          </button>
+                        </>
                       )}
                     </td>
                     <td className="px-4 py-3 space-x-2">
