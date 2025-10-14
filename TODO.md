@@ -1,7 +1,5 @@
-# TODO: Fix Attendance Saving to Supabase
+# TODO: Remove Forgot Password Functionality
 
-- [x] Change initial attendance state to empty array
-- [x] Add fetchAttendance function to load attendance records from Supabase
-- [x] Call fetchAttendance in useEffect on app initialization
-- [x] Modify handleMarkAttendance to insert into 'attendance' table and refetch
-- [x] Update handleDeleteUser to delete attendance records from DB and refetch
+- [x] Edit src/App.js: Remove import of ResetPasswordPage, remove resetForm state, remove handleResetPassword function, remove the render condition for 'reset-password'
+- [x] Edit src/components/LoginPage.js: Remove the "Forgot Password?" button
+- [x] Delete src/components/ResetPasswordPage.js

@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import LoginPage from './components/LoginPage';
 import RegisterPage from './components/RegisterPage';
-import ResetPasswordPage from './components/ResetPasswordPage';
 import UserDashboard from './components/UserDashboard';
 import AdminLoginPage from './components/AdminLoginPage';
 import AdminDashboard from './components/AdminDashboard';
@@ -99,7 +98,6 @@ export default function AttendanceApp() {
   // Form states
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
   const [registerForm, setRegisterForm] = useState({ name: '', email: '', password: '', confirmPassword: '' });
-  const [resetForm, setResetForm] = useState({ email: '', newPassword: '', confirmPassword: '' });
   const [adminLogin, setAdminLogin] = useState({ username: '', password: '' });
   const [editUser, setEditUser] = useState(null);
   const [editForm, setEditForm] = useState({ name: '', email: '', password: '' });
@@ -223,38 +221,7 @@ export default function AttendanceApp() {
     }
   };
 
-  const handleResetPassword = async () => {
-    if (resetForm.newPassword !== resetForm.confirmPassword) {
-      alert('Passwords do not match');
-      return;
-    }
 
-    setLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from('users')
-        .update({ password: resetForm.newPassword })
-        .eq('email', resetForm.email)
-        .select();
-
-      if (error) throw error;
-
-      if (data.length === 0) {
-        alert('Email not found');
-        return;
-      }
-
-      alert('Password reset successful!');
-      setPage('login');
-      setResetForm({ email: '', newPassword: '', confirmPassword: '' });
-      setError('');
-    } catch (err) {
-      setError(err.message);
-      alert('Password reset failed: ' + err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleMarkAttendance = async () => {
     if (!attendanceSession.active) {
@@ -487,9 +454,7 @@ export default function AttendanceApp() {
     return <RegisterPage registerForm={registerForm} setRegisterForm={setRegisterForm} showPassword={showPassword} setShowPassword={setShowPassword} handleUserRegister={handleUserRegister} setPage={setPage} />;
   }
 
-  if (page === 'reset-password') {
-    return <ResetPasswordPage resetForm={resetForm} setResetForm={setResetForm} showPassword={showPassword} setShowPassword={setShowPassword} handleResetPassword={handleResetPassword} setPage={setPage} />;
-  }
+
 
   if (page === 'user-dashboard' && currentUser) {
     return <UserDashboard 

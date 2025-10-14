@@ -56,12 +56,6 @@ export default function LoginPage({ loginForm, setLoginForm, showPassword, setSh
           >
             Join The Team
           </button>
-          <button
-            onClick={() => setPage('reset-password')}
-            className="w-full text-orange-600 hover:text-orange-800 font-semibold underline"
-          >
-            Forgot Password?
-          </button>
         </div>
 
         <div className="mt-8 pt-6 border-t-2 border-gray-300">
