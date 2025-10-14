@@ -17,7 +17,8 @@ export default function UserDashboard({
   handleCombinedAction
 }) {
   const userAttendance = attendance.filter(a => a.user_id === currentUser.id);
-  const presentCount = userAttendance.filter(a => a.status === 'Present').length;
+  const sortedUserAttendance = userAttendance.sort((a, b) => new Date(b.date) - new Date(a.date));
+  const presentCount = sortedUserAttendance.filter(a => a.status === 'Present').length;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-yellow-50 to-red-50">
@@ -101,26 +102,36 @@ export default function UserDashboard({
               </div>
               <div className="bg-gradient-to-br from-blue-100 to-cyan-100 rounded-xl p-3 border-2 border-blue-300 text-center">
                 <p className="text-sm font-bold text-gray-700">Total Records</p>
-                <p className="text-3xl font-black text-blue-600">{userAttendance.length}</p>
+                <p className="text-3xl font-black text-blue-600">{sortedUserAttendance.length}</p>
               </div>
             </div>
 
-            <div className="space-y-3 max-h-96 overflow-y-auto">
-              {userAttendance.length > 0 ? (
-                userAttendance.map(record => (
-                  <div key={record.id} className="border-2 border-orange-300 rounded-xl p-4 bg-gradient-to-r from-orange-50 to-yellow-50">
-                    <p className="font-black text-orange-700 text-lg">📅 {record.date}</p>
-                    <p className="text-sm text-gray-700 mt-1">🕐 {record.time}</p>
-                    <p className="text-sm text-gray-700">✅ <span className="font-black text-green-600">{record.status}</span></p>
-                    <p className="text-sm text-gray-700">📍 {record.location}</p>
-                  </div>
-                ))
-              ) : (
-                <div className="text-center py-12 text-gray-500 font-bold text-lg">
-                  📊 No Records Yet
+            {sortedUserAttendance.length > 0 ? (
+              <>
+                <div className="border-2 border-orange-500 rounded-xl p-4 bg-gradient-to-r from-orange-100 to-yellow-100 mb-4">
+                  <p className="font-black text-orange-800 text-lg mb-2">📅 Latest Record</p>
+                  <p className="font-black text-orange-700 text-lg">📅 {sortedUserAttendance[0].date}</p>
+                  <p className="text-sm text-gray-700 mt-1">🕐 {sortedUserAttendance[0].time}</p>
+                  <p className="text-sm text-gray-700">✅ <span className="font-black text-green-600">{sortedUserAttendance[0].status}</span></p>
+                  <p className="text-sm text-gray-700">📍 {sortedUserAttendance[0].location}</p>
                 </div>
-              )}
-            </div>
+
+                <div className="space-y-3 max-h-64 overflow-y-auto">
+                  {sortedUserAttendance.slice(1).map(record => (
+                    <div key={record.id} className="border-2 border-orange-300 rounded-xl p-4 bg-gradient-to-r from-orange-50 to-yellow-50">
+                      <p className="font-black text-orange-700 text-lg">📅 {record.date}</p>
+                      <p className="text-sm text-gray-700 mt-1">🕐 {record.time}</p>
+                      <p className="text-sm text-gray-700">✅ <span className="font-black text-green-600">{record.status}</span></p>
+                      <p className="text-sm text-gray-700">📍 {record.location}</p>
+                    </div>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <div className="text-center py-12 text-gray-500 font-bold text-lg">
+                📊 No Records Yet
+              </div>
+            )}
           </div>
         </div>
       </div>
