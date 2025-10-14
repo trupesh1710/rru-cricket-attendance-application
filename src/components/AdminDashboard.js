@@ -49,7 +49,7 @@ export default function AdminDashboard({
       <nav className="bg-gradient-to-r from-gray-900 via-orange-700 to-red-700 text-white p-4 shadow-2xl">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <img src="/rru-logo.png" alt="RRU Logo" className="w-8 h-8" />
+            <img src="/rru-logo.png" alt="RRU Logo" className="w-10 h-10" />
             <h1 className="text-1xl md:text-3xl font-black">⚙️ RRU CRICKET ADMIN</h1>
           </div>
           <button

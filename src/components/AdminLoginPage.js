@@ -12,7 +12,7 @@ export default function AdminLoginPage({ adminLogin, setAdminLogin, showPassword
       <div className="w-full max-w-md bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl shadow-2xl p-8 border-2 border-orange-500 relative z-10">
         <div className="text-center mb-8">
           <div className="inline-block bg-gradient-to-r from-orange-600 to-red-600 p-4 rounded-full mb-4">
-            <img src="/rru-logo.png" alt="RRU Logo" className="w-10 h-10" />
+            <img src="/rru-logo.png" alt="RRU Logo" className="w-20 h-20" />
           </div>
           <h2 className="text-3xl font-black text-white">ADMIN CONTROL</h2>
           <p className="text-orange-400 mt-2 font-bold">Management Panel</p>

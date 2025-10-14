@@ -10,7 +10,7 @@ export default function LoginPage({ loginForm, setLoginForm, showPassword, setSh
       <div className="w-full max-w-md bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-2xl p-8 relative z-10 border-2 border-orange-300">
         <div className="text-center mb-8">
           <div className="inline-block bg-gradient-to-r from-orange-600 to-red-600 p-4 rounded-full mb-4">
-            <img src="/rru-logo.png" alt="RRU Logo" className="w-10 h-10" />
+            <img src="/rru-logo.png" alt="RRU Logo" className="w-20 h-20" />
           </div>
           <h1 className="text-4xl font-black bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">RRU CRICKET</h1>
           <p className="text-gray-600 mt-2 font-semibold">Attendance Management System</p>
