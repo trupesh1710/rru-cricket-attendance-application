@@ -154,14 +154,8 @@ export default function AttendanceApp() {
   // Combined action: get location and mark attendance
   const handleCombinedAction = async () => {
     try {
-      await getUserLocationAsync();
-      if (!userLocation) {
-        setPopupMessage('Please enable location services');
-        setPopupType('error');
-        setShowPopup(true);
-        return;
-      }
-      handleMarkAttendance();
+      const location = await getUserLocationAsync();
+      handleMarkAttendance(location);
     } catch (err) {
       // Error handling is done in getUserLocationAsync
     }
@@ -266,14 +260,14 @@ export default function AttendanceApp() {
 
 
 
-  const handleMarkAttendance = async () => {
+  const handleMarkAttendance = async (location = userLocation) => {
     if (!attendanceSession.active) {
       setPopupMessage('No active attendance session');
       setPopupType('error');
       setShowPopup(true);
       return;
     }
-    if (!userLocation) {
+    if (!location) {
       setPopupMessage('Please enable location services');
       setPopupType('error');
       setShowPopup(true);
@@ -281,8 +275,8 @@ export default function AttendanceApp() {
     }
 
     const distance = calculateDistance(
-      userLocation.lat,
-      userLocation.lng,
+      location.lat,
+      location.lng,
       attendanceSession.location.lat,
       attendanceSession.location.lng
     );
@@ -321,7 +315,11 @@ export default function AttendanceApp() {
       setShowPopup(true);
     } catch (err) {
       console.error('Error marking attendance:', err);
-      setPopupMessage('Failed to mark attendance: ' + err.message);
+      if (err.message.includes('duplicate key')) {
+        setPopupMessage('Attendance already marked for today');
+      } else {
+        setPopupMessage('Failed to mark attendance: ' + err.message);
+      }
       setPopupType('error');
       setShowPopup(true);
     }
