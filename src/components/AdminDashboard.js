@@ -86,9 +86,9 @@ export default function AdminDashboard({
             <Users size={28} /> MANAGE PLAYERS
           </h2>
 
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto max-h-80 overflow-y-auto">
             <table className="w-full">
-              <thead className="bg-gradient-to-r from-blue-700 to-blue-800">
+              <thead className="bg-gradient-to-r from-blue-700 to-blue-800 sticky top-0">
                 <tr>
                   <th className="px-4 py-3 text-left text-white font-black">Name</th>
                   <th className="px-4 py-3 text-left text-white font-black">Email</th>
@@ -181,9 +181,9 @@ export default function AdminDashboard({
             <Users size={28} /> MANAGE ADMINS
           </h2>
 
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto max-h-80 overflow-y-auto">
             <table className="w-full">
-              <thead className="bg-gradient-to-r from-red-700 to-red-800">
+              <thead className="bg-gradient-to-r from-red-700 to-red-800 sticky top-0">
                 <tr>
                   <th className="px-4 py-3 text-left text-white font-black">Name</th>
                   <th className="px-4 py-3 text-left text-white font-black">Email</th>
@@ -278,13 +278,13 @@ export default function AdminDashboard({
 
           <div className="overflow-y-auto max-h-96">
             <table className="w-full">
-              <thead className="bg-gradient-to-r from-green-700 to-green-800">
+              <thead className="bg-gradient-to-r from-green-700 to-green-800 sticky top-0">
                 <tr>
                   <th className="px-4 py-3 text-left text-white font-black">Player Name</th>
                   <th className="px-4 py-3 text-left text-white font-black">Date</th>
-                  <th className="px-4 py-3 text-left text-white font-black">Time</th>
+                  <th className="px-4 py-3 text-left text-white font-black hidden md:table-cell">Time</th>
                   <th className="px-4 py-3 text-left text-white font-black">Status</th>
-                  <th className="px-4 py-3 text-left text-white font-black">Location</th>
+                  <th className="px-4 py-3 text-left text-white font-black hidden md:table-cell">Location</th>
                 </tr>
               </thead>
               <tbody>
@@ -296,19 +296,21 @@ export default function AdminDashboard({
                       <tr key={record.id} className="border-b border-gray-700 hover:bg-gray-700 transition">
                         <td className="px-4 py-3 text-white font-bold">{user?.name || 'Unknown'}</td>
                         <td className="px-4 py-3 text-white font-bold">{record.date}</td>
-                        <td className="px-4 py-3 text-white font-bold">{record.time}</td>
+                        <td className="px-4 py-3 text-white font-bold hidden md:table-cell">{record.time}</td>
                         <td className="px-4 py-3">
                           {record.status === 'Present' ? (
                             <span className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-3 py-1 rounded font-black">
-                              ✅ {record.status}
+                              <span className="md:hidden">✅</span>
+                              <span className="hidden md:inline">✅ Present</span>
                             </span>
                           ) : (
                             <span className="bg-gradient-to-r from-red-500 to-red-600 text-white px-3 py-1 rounded font-black">
-                              ❌ {record.status}
+                              <span className="md:hidden">❌</span>
+                              <span className="hidden md:inline">❌ Absent</span>
                             </span>
                           )}
                         </td>
-                        <td className="px-4 py-3 text-white font-bold">{record.location}</td>
+                        <td className="px-4 py-3 text-white font-bold hidden md:table-cell">{record.location}</td>
                       </tr>
                     );
                   })}
