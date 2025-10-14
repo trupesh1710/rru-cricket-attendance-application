@@ -112,7 +112,7 @@ export default function UserDashboard({
                   <p className="font-black text-orange-800 text-lg mb-2">📅 Latest Record</p>
                   <p className="font-black text-orange-700 text-lg">📅 {sortedUserAttendance[0].date}</p>
                   <p className="text-sm text-gray-700 mt-1">🕐 {sortedUserAttendance[0].time}</p>
-                  <p className="text-sm text-gray-700">✅ <span className="font-black text-green-600">{sortedUserAttendance[0].status}</span></p>
+                  <p className="text-sm text-gray-700">{sortedUserAttendance[0].status === 'Present' ? '✅' : '❌'} <span className={`font-black ${sortedUserAttendance[0].status === 'Present' ? 'text-green-600' : 'text-red-600'}`}>{sortedUserAttendance[0].status}</span></p>
                   <p className="text-sm text-gray-700">📍 {sortedUserAttendance[0].location}</p>
                 </div>
 
@@ -121,7 +121,7 @@ export default function UserDashboard({
                     <div key={record.id} className="border-2 border-orange-300 rounded-xl p-4 bg-gradient-to-r from-orange-50 to-yellow-50">
                       <p className="font-black text-orange-700 text-lg">📅 {record.date}</p>
                       <p className="text-sm text-gray-700 mt-1">🕐 {record.time}</p>
-                      <p className="text-sm text-gray-700">✅ <span className="font-black text-green-600">{record.status}</span></p>
+                      <p className="text-sm text-gray-700">{record.status === 'Present' ? '✅' : '❌'} <span className={`font-black ${record.status === 'Present' ? 'text-green-600' : 'text-red-600'}`}>{record.status}</span></p>
                       <p className="text-sm text-gray-700">📍 {record.location}</p>
                     </div>
                   ))}
