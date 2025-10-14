@@ -13,7 +13,8 @@ export default function UserDashboard({
   setLocationError,
   getUserLocation,
   calculateDistance,
-  handleMarkAttendance
+  handleMarkAttendance,
+  handleCombinedAction
 }) {
   const userAttendance = attendance.filter(a => a.user_id === currentUser.id);
   const presentCount = userAttendance.filter(a => a.status === 'Present').length;
@@ -75,17 +76,10 @@ export default function UserDashboard({
                 )}
 
                 <button
-                  onClick={getUserLocation}
-                  className="w-full bg-gradient-to-r from-blue-500 to-cyan-600 text-white py-3 rounded-xl hover:from-blue-600 hover:to-cyan-700 font-black text-lg shadow-lg transform hover:scale-105 transition"
-                >
-                  📍 GET MY LOCATION
-                </button>
-
-                <button
-                  onClick={handleMarkAttendance}
+                  onClick={handleCombinedAction}
                   className="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white py-4 rounded-xl hover:from-green-600 hover:to-emerald-700 font-black text-xl shadow-lg transform hover:scale-105 transition"
                 >
-                  🏟️ MARK ATTENDANCE
+                   MARK ATTENDANCE
                 </button>
               </div>
             ) : (

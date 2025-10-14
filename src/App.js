@@ -20,23 +20,16 @@ export default function AttendanceApp() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
   const [attendance, setAttendance] = useState([]);
 
   // Fetch users from Supabase
   const fetchUsers = async () => {
-    setLoading(true);
     try {
       const { data, error } = await supabase.from('users').select('*');
       if (error) throw error;
       setUsers(data || []);
-      setError('');
     } catch (err) {
-      setError(err.message);
       console.error('Error fetching users:', err);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -94,6 +87,8 @@ export default function AttendanceApp() {
   const [showPassword, setShowPassword] = useState({});
   const [userLocation, setUserLocation] = useState(null);
   const [locationError, setLocationError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   // Form states
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
@@ -103,9 +98,7 @@ export default function AttendanceApp() {
   const [editForm, setEditForm] = useState({ name: '', email: '', password: '' });
   const [newUserForm, setNewUserForm] = useState({ name: '', email: '', password: '' });
 
-  // Admin credentials
-  const ADMIN_USERNAME = 'admin';
-  const ADMIN_PASSWORD = 'admin123';
+
 
   // Get user's current location
   const getUserLocation = () => {
@@ -127,6 +120,46 @@ export default function AttendanceApp() {
     }
   };
 
+  // Async version for combined action
+  const getUserLocationAsync = () => {
+    return new Promise((resolve, reject) => {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const loc = {
+              lat: position.coords.latitude,
+              lng: position.coords.longitude
+            };
+            setUserLocation(loc);
+            setLocationError('');
+            resolve(loc);
+          },
+          (error) => {
+            setLocationError('Unable to get location. Please enable location services.');
+            reject(error);
+          }
+        );
+      } else {
+        setLocationError('Geolocation is not supported by your browser.');
+        reject(new Error('Geolocation not supported'));
+      }
+    });
+  };
+
+  // Combined action: get location and mark attendance
+  const handleCombinedAction = async () => {
+    try {
+      await getUserLocationAsync();
+      if (!userLocation) {
+        alert('Please enable location services');
+        return;
+      }
+      handleMarkAttendance();
+    } catch (err) {
+      // Error handling is done in getUserLocationAsync
+    }
+  };
+
   // Calculate distance between two coordinates
   const calculateDistance = (lat1, lng1, lat2, lng2) => {
     const R = 6371000;
@@ -141,7 +174,6 @@ export default function AttendanceApp() {
 
   // USER FUNCTIONS
   const handleUserLogin = async () => {
-    setLoading(true);
     try {
       const { data, error } = await supabase
         .from('users')
@@ -159,12 +191,8 @@ export default function AttendanceApp() {
       setCurrentUser(data);
       setPage('user-dashboard');
       setLoginForm({ email: '', password: '' });
-      setError('');
     } catch (err) {
-      setError(err.message);
       alert('Login failed: ' + err.message);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -178,10 +206,9 @@ export default function AttendanceApp() {
       return;
     }
 
-    setLoading(true);
     try {
       // Check if email already exists
-      const { data: existingUser, error: checkError } = await supabase
+      const { data: existingUser } = await supabase
         .from('users')
         .select('id')
         .eq('email', registerForm.email)
@@ -193,7 +220,7 @@ export default function AttendanceApp() {
       }
 
       // Insert new user
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('users')
         .insert([
           {
@@ -211,13 +238,9 @@ export default function AttendanceApp() {
       alert('Registration successful! Please login.');
       setPage('login');
       setRegisterForm({ name: '', email: '', password: '', confirmPassword: '' });
-      setError('');
       fetchUsers(); // Refresh users list
     } catch (err) {
-      setError(err.message);
       alert('Registration failed: ' + err.message);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -251,7 +274,7 @@ export default function AttendanceApp() {
     const status = distance > attendanceSession.radius ? 'Absent' : 'Present';
 
     try {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('attendance')
         .insert([
           {
@@ -276,7 +299,6 @@ export default function AttendanceApp() {
 
   // ADMIN FUNCTIONS
   const handleAdminLogin = async () => {
-    setLoading(true);
     try {
       const { data, error } = await supabase
         .from('users')
@@ -294,12 +316,8 @@ export default function AttendanceApp() {
       setIsAdmin(true);
       setPage('admin-dashboard');
       setAdminLogin({ username: '', password: '' });
-      setError('');
     } catch (err) {
-      setError(err.message);
       alert('Admin login failed: ' + err.message);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -309,10 +327,9 @@ export default function AttendanceApp() {
       return;
     }
 
-    setLoading(true);
     try {
       // Check if email already exists
-      const { data: existingUser, error: checkError } = await supabase
+      const { data: existingUser } = await supabase
         .from('users')
         .select('id')
         .eq('email', newUserForm.email)
@@ -324,7 +341,7 @@ export default function AttendanceApp() {
       }
 
       // Insert new user
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('users')
         .insert([
           {
@@ -342,19 +359,14 @@ export default function AttendanceApp() {
       setNewUserForm({ name: '', email: '', password: '' });
       alert('User added successfully');
       fetchUsers(); // Refresh users list
-      setError('');
     } catch (err) {
-      setError(err.message);
       alert('Failed to add user: ' + err.message);
-    } finally {
-      setLoading(false);
     }
   };
 
   const handleDeleteUser = async (userId) => {
     // eslint-disable-next-line no-restricted-globals
     if (window.confirm('Are you sure you want to delete this user?')) {
-      setLoading(true);
       try {
         // Delete attendance records first
         const { error: attendanceError } = await supabase
@@ -374,12 +386,8 @@ export default function AttendanceApp() {
 
         fetchUsers(); // Refresh users list
         fetchAttendance(); // Refresh attendance list
-        setError('');
       } catch (err) {
-        setError(err.message);
         alert('Failed to delete user: ' + err.message);
-      } finally {
-        setLoading(false);
       }
     }
   };
@@ -390,7 +398,6 @@ export default function AttendanceApp() {
   };
 
   const handleSaveEdit = async () => {
-    setLoading(true);
     try {
       const { error } = await supabase
         .from('users')
@@ -407,12 +414,8 @@ export default function AttendanceApp() {
       setEditUser(null);
       setEditForm({ name: '', email: '', password: '' });
       alert('User updated successfully');
-      setError('');
     } catch (err) {
-      setError(err.message);
       alert('Failed to update user: ' + err.message);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -457,19 +460,20 @@ export default function AttendanceApp() {
 
 
   if (page === 'user-dashboard' && currentUser) {
-    return <UserDashboard 
-      currentUser={currentUser} 
-      setCurrentUser={setCurrentUser} 
-      setPage={setPage} 
-      attendance={attendance} 
-      attendanceSession={attendanceSession} 
-      userLocation={userLocation} 
-      setUserLocation={setUserLocation} 
-      locationError={locationError} 
-      setLocationError={setLocationError} 
-      getUserLocation={getUserLocation} 
-      calculateDistance={calculateDistance} 
-      handleMarkAttendance={handleMarkAttendance} 
+    return <UserDashboard
+      currentUser={currentUser}
+      setCurrentUser={setCurrentUser}
+      setPage={setPage}
+      attendance={attendance}
+      attendanceSession={attendanceSession}
+      userLocation={userLocation}
+      setUserLocation={setUserLocation}
+      locationError={locationError}
+      setLocationError={setLocationError}
+      getUserLocation={getUserLocation}
+      calculateDistance={calculateDistance}
+      handleMarkAttendance={handleMarkAttendance}
+      handleCombinedAction={handleCombinedAction}
     />;
   }
 
