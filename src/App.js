@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
+import { motion, AnimatePresence } from 'framer-motion';
 import LoginPage from './components/LoginPage';
 import RegisterPage from './components/RegisterPage';
 import UserDashboard from './components/UserDashboard';
@@ -449,61 +450,69 @@ export default function AttendanceApp() {
     }
   };
 
-  if (page === 'login') {
-    return <LoginPage loginForm={loginForm} setLoginForm={setLoginForm} showPassword={showPassword} setShowPassword={setShowPassword} handleUserLogin={handleUserLogin} setPage={setPage} />;
-  }
+  return (
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={page}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.5, ease: "easeInOut" }}
+      >
+        {page === 'login' && (
+          <LoginPage loginForm={loginForm} setLoginForm={setLoginForm} showPassword={showPassword} setShowPassword={setShowPassword} handleUserLogin={handleUserLogin} setPage={setPage} />
+        )}
 
-  if (page === 'register') {
-    return <RegisterPage registerForm={registerForm} setRegisterForm={setRegisterForm} showPassword={showPassword} setShowPassword={setShowPassword} handleUserRegister={handleUserRegister} setPage={setPage} />;
-  }
+        {page === 'register' && (
+          <RegisterPage registerForm={registerForm} setRegisterForm={setRegisterForm} showPassword={showPassword} setShowPassword={setShowPassword} handleUserRegister={handleUserRegister} setPage={setPage} />
+        )}
 
+        {page === 'user-dashboard' && currentUser && (
+          <UserDashboard
+            currentUser={currentUser}
+            setCurrentUser={setCurrentUser}
+            setPage={setPage}
+            attendance={attendance}
+            attendanceSession={attendanceSession}
+            userLocation={userLocation}
+            setUserLocation={setUserLocation}
+            locationError={locationError}
+            setLocationError={setLocationError}
+            getUserLocation={getUserLocation}
+            calculateDistance={calculateDistance}
+            handleMarkAttendance={handleMarkAttendance}
+            handleCombinedAction={handleCombinedAction}
+          />
+        )}
 
+        {page === 'admin-login' && (
+          <AdminLoginPage adminLogin={adminLogin} setAdminLogin={setAdminLogin} showPassword={showPassword} setShowPassword={setShowPassword} handleAdminLogin={handleAdminLogin} setPage={setPage} />
+        )}
 
-  if (page === 'user-dashboard' && currentUser) {
-    return <UserDashboard
-      currentUser={currentUser}
-      setCurrentUser={setCurrentUser}
-      setPage={setPage}
-      attendance={attendance}
-      attendanceSession={attendanceSession}
-      userLocation={userLocation}
-      setUserLocation={setUserLocation}
-      locationError={locationError}
-      setLocationError={setLocationError}
-      getUserLocation={getUserLocation}
-      calculateDistance={calculateDistance}
-      handleMarkAttendance={handleMarkAttendance}
-      handleCombinedAction={handleCombinedAction}
-    />;
-  }
-
-  if (page === 'admin-login') {
-    return <AdminLoginPage adminLogin={adminLogin} setAdminLogin={setAdminLogin} showPassword={showPassword} setShowPassword={setShowPassword} handleAdminLogin={handleAdminLogin} setPage={setPage} />;
-  }
-
-  if (page === 'admin-dashboard' && isAdmin) {
-    return <AdminDashboard
-      setIsAdmin={setIsAdmin}
-      setPage={setPage}
-      users={users}
-      setUsers={setUsers}
-      attendance={attendance}
-      setAttendance={setAttendance}
-      attendanceSession={attendanceSession}
-      setAttendanceSession={setAttendanceSession}
-      newUserForm={newUserForm}
-      setNewUserForm={setNewUserForm}
-      handleAddUser={handleAddUser}
-      handleDeleteUser={handleDeleteUser}
-      handleEditUser={handleEditUser}
-      handleSaveEdit={handleSaveEdit}
-      editUser={editUser}
-      setEditUser={setEditUser}
-      editForm={editForm}
-      setEditForm={setEditForm}
-      saveAttendanceSession={saveAttendanceSession}
-    />;
-  }
-
-  return null;
+        {page === 'admin-dashboard' && isAdmin && (
+          <AdminDashboard
+            setIsAdmin={setIsAdmin}
+            setPage={setPage}
+            users={users}
+            setUsers={setUsers}
+            attendance={attendance}
+            setAttendance={setAttendance}
+            attendanceSession={attendanceSession}
+            setAttendanceSession={setAttendanceSession}
+            newUserForm={newUserForm}
+            setNewUserForm={setNewUserForm}
+            handleAddUser={handleAddUser}
+            handleDeleteUser={handleDeleteUser}
+            handleEditUser={handleEditUser}
+            handleSaveEdit={handleSaveEdit}
+            editUser={editUser}
+            setEditUser={setEditUser}
+            editForm={editForm}
+            setEditForm={setEditForm}
+            saveAttendanceSession={saveAttendanceSession}
+          />
+        )}
+      </motion.div>
+    </AnimatePresence>
+  );
 }
