@@ -1,5 +1,6 @@
-  import React from 'react';
-import { LogOut, Plus, Users, Calendar, Edit2, Trash2, Zap } from 'lucide-react';
+import React, { useState } from 'react';
+import { LogOut, Plus, Users, Calendar, Edit2, Trash2, Zap, Download } from 'lucide-react';
+import * as XLSX from 'xlsx';
 
 export default function AdminDashboard({
   setIsAdmin,
@@ -22,6 +23,26 @@ export default function AdminDashboard({
   setEditForm,
   saveAttendanceSession
 }) {
+  const [filterDate, setFilterDate] = useState('');
+
+  const handleDownloadExcel = () => {
+    const filteredAttendance = attendance.filter(record => !filterDate || record.date === filterDate);
+    const data = filteredAttendance.map(record => {
+      const user = users.find(u => u.id === record.user_id);
+      return {
+        'Player Name': user?.name || 'Unknown',
+        'Date': record.date,
+        'Time': record.time,
+        'Status': record.status,
+        'Location': record.location
+      };
+    });
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Attendance Records');
+    XLSX.writeFile(wb, `attendance_records${filterDate ? `_${filterDate}` : ''}.xlsx`);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black">
       <nav className="bg-gradient-to-r from-gray-900 via-orange-700 to-red-700 text-white p-4 shadow-2xl">
@@ -183,6 +204,22 @@ export default function AdminDashboard({
             <Calendar size={28} /> ATTENDANCE RECORDS
           </h2>
 
+          <div className="mb-4 flex gap-4 items-center">
+            <label className="text-green-300 font-black">Filter by Date:</label>
+            <input
+              type="date"
+              value={filterDate}
+              onChange={(e) => setFilterDate(e.target.value)}
+              className="px-4 py-2 border-2 border-green-500 rounded-lg focus:outline-none focus:border-yellow-400 bg-gray-700 text-white font-bold"
+            />
+            <button
+              onClick={handleDownloadExcel}
+              className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-4 py-2 rounded-lg hover:from-green-700 hover:to-emerald-700 font-black shadow-lg transform hover:scale-105 transition inline-flex items-center gap-2"
+            >
+              <Download size={20} /> DOWNLOAD EXCEL
+            </button>
+          </div>
+
           <div className="overflow-y-auto max-h-96">
             <table className="w-full">
               <thead className="bg-gradient-to-r from-green-700 to-green-800 sticky top-0">
@@ -196,6 +233,7 @@ export default function AdminDashboard({
               </thead>
               <tbody>
                 {attendance
+                  .filter(record => !filterDate || record.date === filterDate)
                   .sort((a, b) => new Date(b.date) - new Date(a.date))
                   .map(record => {
                     const user = users.find(u => u.id === record.user_id);
