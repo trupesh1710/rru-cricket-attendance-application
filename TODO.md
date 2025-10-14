@@ -1,6 +1,8 @@
-# TODO: Remove Forgot Password Functionality
+# TODO: Replace All Alerts with Popup Messages
 
-- [x] Edit src/App.js: Remove import of ResetPasswordPage, remove resetForm state, remove handleResetPassword function, remove the render condition for 'reset-password'
-- [x] Edit src/components/LoginPage.js: Remove the "Forgot Password?" button
-- [x] Delete src/components/ResetPasswordPage.js
-p
+## Steps to Complete:
+- [x] Add popup state variables in App.js (showPopup, popupMessage, popupType)
+- [x] Create a modal component JSX in App.js for displaying popups
+- [x] Replace all alert() calls in App.js with popup display logic
+- [x] Handle specific actions on popup close (e.g., navigate to login after successful registration)
+- [ ] Test the popup functionality by running the app

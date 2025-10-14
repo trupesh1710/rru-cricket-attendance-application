@@ -1,4 +1,4 @@
-import React from 'react';
+  import React from 'react';
 import { LogOut, Plus, Users, Calendar, Edit2, Trash2, Zap } from 'lucide-react';
 
 export default function AdminDashboard({
@@ -276,7 +276,7 @@ export default function AdminDashboard({
             <Calendar size={28} /> ATTENDANCE RECORDS
           </h2>
 
-          <div className="overflow-x-auto">
+          <div className="overflow-y-auto max-h-96">
             <table className="w-full">
               <thead className="bg-gradient-to-r from-green-700 to-green-800">
                 <tr>
@@ -288,22 +288,30 @@ export default function AdminDashboard({
                 </tr>
               </thead>
               <tbody>
-                {attendance.map(record => {
-                  const user = users.find(u => u.id === record.user_id);
-                  return (
-                    <tr key={record.id} className="border-b border-gray-700 hover:bg-gray-700 transition">
-                      <td className="px-4 py-3 text-white font-bold">{user?.name || 'Unknown'}</td>
-                      <td className="px-4 py-3 text-white font-bold">{record.date}</td>
-                      <td className="px-4 py-3 text-white font-bold">{record.time}</td>
-                      <td className="px-4 py-3">
-                        <span className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-3 py-1 rounded font-black">
-                          ✅ {record.status}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-white font-bold">{record.location}</td>
-                    </tr>
-                  );
-                })}
+                {attendance
+                  .sort((a, b) => new Date(b.date) - new Date(a.date))
+                  .map(record => {
+                    const user = users.find(u => u.id === record.user_id);
+                    return (
+                      <tr key={record.id} className="border-b border-gray-700 hover:bg-gray-700 transition">
+                        <td className="px-4 py-3 text-white font-bold">{user?.name || 'Unknown'}</td>
+                        <td className="px-4 py-3 text-white font-bold">{record.date}</td>
+                        <td className="px-4 py-3 text-white font-bold">{record.time}</td>
+                        <td className="px-4 py-3">
+                          {record.status === 'Present' ? (
+                            <span className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-3 py-1 rounded font-black">
+                              ✅ {record.status}
+                            </span>
+                          ) : (
+                            <span className="bg-gradient-to-r from-red-500 to-red-600 text-white px-3 py-1 rounded font-black">
+                              ❌ {record.status}
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-white font-bold">{record.location}</td>
+                      </tr>
+                    );
+                  })}
               </tbody>
             </table>
           </div>

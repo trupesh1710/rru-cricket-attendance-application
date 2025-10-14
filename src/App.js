@@ -90,6 +90,10 @@ export default function AttendanceApp() {
   const [locationError, setLocationError] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showPopup, setShowPopup] = useState(false);
+  const [popupMessage, setPopupMessage] = useState('');
+  const [popupType, setPopupType] = useState('success'); // 'success', 'error', 'info', 'confirm'
+  const [pendingDeleteUserId, setPendingDeleteUserId] = useState(null);
 
   // Form states
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
@@ -152,7 +156,9 @@ export default function AttendanceApp() {
     try {
       await getUserLocationAsync();
       if (!userLocation) {
-        alert('Please enable location services');
+        setPopupMessage('Please enable location services');
+        setPopupType('error');
+        setShowPopup(true);
         return;
       }
       handleMarkAttendance();
@@ -185,7 +191,9 @@ export default function AttendanceApp() {
         .single();
 
       if (error || !data) {
-        alert('Invalid email or password');
+        setPopupMessage('Invalid email or password');
+        setPopupType('error');
+        setShowPopup(true);
         return;
       }
 
@@ -193,17 +201,23 @@ export default function AttendanceApp() {
       setPage('user-dashboard');
       setLoginForm({ email: '', password: '' });
     } catch (err) {
-      alert('Login failed: ' + err.message);
+      setPopupMessage('Login failed: ' + err.message);
+      setPopupType('error');
+      setShowPopup(true);
     }
   };
 
   const handleUserRegister = async () => {
     if (registerForm.password !== registerForm.confirmPassword) {
-      alert('Passwords do not match');
+      setPopupMessage('Passwords do not match');
+      setPopupType('error');
+      setShowPopup(true);
       return;
     }
     if (!registerForm.name || !registerForm.email || !registerForm.password) {
-      alert('Please fill all fields');
+      setPopupMessage('Please fill all fields');
+      setPopupType('error');
+      setShowPopup(true);
       return;
     }
 
@@ -216,7 +230,9 @@ export default function AttendanceApp() {
         .single();
 
       if (existingUser) {
-        alert('Email already registered');
+        setPopupMessage('Email already registered');
+        setPopupType('error');
+        setShowPopup(true);
         return;
       }
 
@@ -236,12 +252,15 @@ export default function AttendanceApp() {
 
       if (error) throw error;
 
-      alert('Registration successful! Please login.');
-      setPage('login');
-      setRegisterForm({ name: '', email: '', password: '', confirmPassword: '' });
+      setPopupMessage('Registration successful! Please login.');
+      setPopupType('success');
+      setShowPopup(true);
+      // Note: Navigation to login will happen on popup close
       fetchUsers(); // Refresh users list
     } catch (err) {
-      alert('Registration failed: ' + err.message);
+      setPopupMessage('Registration failed: ' + err.message);
+      setPopupType('error');
+      setShowPopup(true);
     }
   };
 
@@ -249,11 +268,15 @@ export default function AttendanceApp() {
 
   const handleMarkAttendance = async () => {
     if (!attendanceSession.active) {
-      alert('No active attendance session');
+      setPopupMessage('No active attendance session');
+      setPopupType('error');
+      setShowPopup(true);
       return;
     }
     if (!userLocation) {
-      alert('Please enable location services');
+      setPopupMessage('Please enable location services');
+      setPopupType('error');
+      setShowPopup(true);
       return;
     }
 
@@ -268,7 +291,9 @@ export default function AttendanceApp() {
       a => a.user_id === currentUser.id && a.date === new Date().toISOString().split('T')[0]
     );
     if (alreadyMarked) {
-      alert('Attendance already marked for today');
+      setPopupMessage('Attendance already marked for today');
+      setPopupType('error');
+      setShowPopup(true);
       return;
     }
 
@@ -291,10 +316,14 @@ export default function AttendanceApp() {
       if (error) throw error;
 
       fetchAttendance(); // Refresh attendance list
-      alert(`Attendance marked as ${status}!`);
+      setPopupMessage(`Attendance marked as ${status}!`);
+      setPopupType('success');
+      setShowPopup(true);
     } catch (err) {
       console.error('Error marking attendance:', err);
-      alert('Failed to mark attendance: ' + err.message);
+      setPopupMessage('Failed to mark attendance: ' + err.message);
+      setPopupType('error');
+      setShowPopup(true);
     }
   };
 
@@ -310,7 +339,9 @@ export default function AttendanceApp() {
         .single();
 
       if (error || !data) {
-        alert('Invalid admin credentials');
+        setPopupMessage('Invalid admin credentials');
+        setPopupType('error');
+        setShowPopup(true);
         return;
       }
 
@@ -318,13 +349,17 @@ export default function AttendanceApp() {
       setPage('admin-dashboard');
       setAdminLogin({ username: '', password: '' });
     } catch (err) {
-      alert('Admin login failed: ' + err.message);
+      setPopupMessage('Admin login failed: ' + err.message);
+      setPopupType('error');
+      setShowPopup(true);
     }
   };
 
   const handleAddUser = async () => {
     if (!newUserForm.name || !newUserForm.email || !newUserForm.password) {
-      alert('Please fill all fields');
+      setPopupMessage('Please fill all fields');
+      setPopupType('error');
+      setShowPopup(true);
       return;
     }
 
@@ -337,7 +372,9 @@ export default function AttendanceApp() {
         .single();
 
       if (existingUser) {
-        alert('Email already exists');
+        setPopupMessage('Email already exists');
+        setPopupType('error');
+        setShowPopup(true);
         return;
       }
 
@@ -358,38 +395,55 @@ export default function AttendanceApp() {
       if (error) throw error;
 
       setNewUserForm({ name: '', email: '', password: '' });
-      alert('User added successfully');
+      setPopupMessage('User added successfully');
+      setPopupType('success');
+      setShowPopup(true);
       fetchUsers(); // Refresh users list
     } catch (err) {
-      alert('Failed to add user: ' + err.message);
+      setPopupMessage('Failed to add user: ' + err.message);
+      setPopupType('error');
+      setShowPopup(true);
     }
   };
 
   const handleDeleteUser = async (userId) => {
-    // eslint-disable-next-line no-restricted-globals
-    if (window.confirm('Are you sure you want to delete this user?')) {
-      try {
-        // Delete attendance records first
-        const { error: attendanceError } = await supabase
-          .from('attendance')
-          .delete()
-          .eq('user_id', userId);
+    setPendingDeleteUserId(userId);
+    setPopupMessage('Are you sure you want to delete this user?');
+    setPopupType('confirm');
+    setShowPopup(true);
+  };
 
-        if (attendanceError) throw attendanceError;
+  const confirmDeleteUser = async () => {
+    if (!pendingDeleteUserId) return;
 
-        // Then delete the user
-        const { error: userError } = await supabase
-          .from('users')
-          .delete()
-          .eq('id', userId);
+    try {
+      // Delete attendance records first
+      const { error: attendanceError } = await supabase
+        .from('attendance')
+        .delete()
+        .eq('user_id', pendingDeleteUserId);
 
-        if (userError) throw userError;
+      if (attendanceError) throw attendanceError;
 
-        fetchUsers(); // Refresh users list
-        fetchAttendance(); // Refresh attendance list
-      } catch (err) {
-        alert('Failed to delete user: ' + err.message);
-      }
+      // Then delete the user
+      const { error: userError } = await supabase
+        .from('users')
+        .delete()
+        .eq('id', pendingDeleteUserId);
+
+      if (userError) throw userError;
+
+      fetchUsers(); // Refresh users list
+      fetchAttendance(); // Refresh attendance list
+      setPopupMessage('User deleted successfully');
+      setPopupType('success');
+      setShowPopup(true);
+    } catch (err) {
+      setPopupMessage('Failed to delete user: ' + err.message);
+      setPopupType('error');
+      setShowPopup(true);
+    } finally {
+      setPendingDeleteUserId(null);
     }
   };
 
@@ -414,9 +468,13 @@ export default function AttendanceApp() {
       fetchUsers(); // Refresh users list
       setEditUser(null);
       setEditForm({ name: '', email: '', password: '' });
-      alert('User updated successfully');
+      setPopupMessage('User updated successfully');
+      setPopupType('success');
+      setShowPopup(true);
     } catch (err) {
-      alert('Failed to update user: ' + err.message);
+      setPopupMessage('Failed to update user: ' + err.message);
+      setPopupType('error');
+      setShowPopup(true);
     }
   };
 
@@ -440,79 +498,183 @@ export default function AttendanceApp() {
       // Refresh the attendance session data after saving
       await fetchAttendanceSession();
 
-      alert('Attendance session settings saved successfully!');
+      setPopupMessage('Attendance session settings saved successfully!');
+      setPopupType('success');
+      setShowPopup(true);
       setError('');
     } catch (err) {
       setError(err.message);
-      alert('Failed to save attendance session settings: ' + err.message);
+      setPopupMessage('Failed to save attendance session settings: ' + err.message);
+      setPopupType('error');
+      setShowPopup(true);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <AnimatePresence mode="wait">
-      <motion.div
-        key={page}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.5, ease: "easeInOut" }}
-      >
-        {page === 'login' && (
-          <LoginPage loginForm={loginForm} setLoginForm={setLoginForm} showPassword={showPassword} setShowPassword={setShowPassword} handleUserLogin={handleUserLogin} setPage={setPage} />
-        )}
+    <>
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={page}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.5, ease: "easeInOut" }}
+        >
+          {page === 'login' && (
+            <LoginPage loginForm={loginForm} setLoginForm={setLoginForm} showPassword={showPassword} setShowPassword={setShowPassword} handleUserLogin={handleUserLogin} setPage={setPage} />
+          )}
 
-        {page === 'register' && (
-          <RegisterPage registerForm={registerForm} setRegisterForm={setRegisterForm} showPassword={showPassword} setShowPassword={setShowPassword} handleUserRegister={handleUserRegister} setPage={setPage} />
-        )}
+          {page === 'register' && (
+            <RegisterPage registerForm={registerForm} setRegisterForm={setRegisterForm} showPassword={showPassword} setShowPassword={setShowPassword} handleUserRegister={handleUserRegister} setPage={setPage} />
+          )}
 
-        {page === 'user-dashboard' && currentUser && (
-          <UserDashboard
-            currentUser={currentUser}
-            setCurrentUser={setCurrentUser}
-            setPage={setPage}
-            attendance={attendance}
-            attendanceSession={attendanceSession}
-            userLocation={userLocation}
-            setUserLocation={setUserLocation}
-            locationError={locationError}
-            setLocationError={setLocationError}
-            getUserLocation={getUserLocation}
-            calculateDistance={calculateDistance}
-            handleMarkAttendance={handleMarkAttendance}
-            handleCombinedAction={handleCombinedAction}
-          />
-        )}
+          {page === 'user-dashboard' && currentUser && (
+            <UserDashboard
+              currentUser={currentUser}
+              setCurrentUser={setCurrentUser}
+              setPage={setPage}
+              attendance={attendance}
+              attendanceSession={attendanceSession}
+              userLocation={userLocation}
+              setUserLocation={setUserLocation}
+              locationError={locationError}
+              setLocationError={setLocationError}
+              getUserLocation={getUserLocation}
+              calculateDistance={calculateDistance}
+              handleMarkAttendance={handleMarkAttendance}
+              handleCombinedAction={handleCombinedAction}
+            />
+          )}
 
-        {page === 'admin-login' && (
-          <AdminLoginPage adminLogin={adminLogin} setAdminLogin={setAdminLogin} showPassword={showPassword} setShowPassword={setShowPassword} handleAdminLogin={handleAdminLogin} setPage={setPage} />
-        )}
+          {page === 'admin-login' && (
+            <AdminLoginPage adminLogin={adminLogin} setAdminLogin={setAdminLogin} showPassword={showPassword} setShowPassword={setShowPassword} handleAdminLogin={handleAdminLogin} setPage={setPage} />
+          )}
 
-        {page === 'admin-dashboard' && isAdmin && (
-          <AdminDashboard
-            setIsAdmin={setIsAdmin}
-            setPage={setPage}
-            users={users}
-            setUsers={setUsers}
-            attendance={attendance}
-            setAttendance={setAttendance}
-            attendanceSession={attendanceSession}
-            setAttendanceSession={setAttendanceSession}
-            newUserForm={newUserForm}
-            setNewUserForm={setNewUserForm}
-            handleAddUser={handleAddUser}
-            handleDeleteUser={handleDeleteUser}
-            handleEditUser={handleEditUser}
-            handleSaveEdit={handleSaveEdit}
-            editUser={editUser}
-            setEditUser={setEditUser}
-            editForm={editForm}
-            setEditForm={setEditForm}
-            saveAttendanceSession={saveAttendanceSession}
-          />
-        )}
-      </motion.div>
-    </AnimatePresence>
+          {page === 'admin-dashboard' && isAdmin && (
+            <AdminDashboard
+              setIsAdmin={setIsAdmin}
+              setPage={setPage}
+              users={users}
+              setUsers={setUsers}
+              attendance={attendance}
+              setAttendance={setAttendance}
+              attendanceSession={attendanceSession}
+              setAttendanceSession={setAttendanceSession}
+              newUserForm={newUserForm}
+              setNewUserForm={setNewUserForm}
+              handleAddUser={handleAddUser}
+              handleDeleteUser={handleDeleteUser}
+              handleEditUser={handleEditUser}
+              handleSaveEdit={handleSaveEdit}
+              editUser={editUser}
+              setEditUser={setEditUser}
+              editForm={editForm}
+              setEditForm={setEditForm}
+              saveAttendanceSession={saveAttendanceSession}
+            />
+          )}
+        </motion.div>
+      </AnimatePresence>
+
+      {/* Popup Modal */}
+      {showPopup && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.8, opacity: 0 }}
+            className={`bg-white rounded-lg p-6 max-w-sm w-full mx-4 shadow-lg ${
+              popupType === 'success' ? 'border-green-500' :
+              popupType === 'error' ? 'border-red-500' :
+              popupType === 'confirm' ? 'border-yellow-500' :
+              'border-blue-500'
+            } border-l-4`}
+          >
+            <div className="flex items-center mb-4">
+              {popupType === 'success' && (
+                <div className="text-green-500 mr-3">
+                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                </div>
+              )}
+              {popupType === 'error' && (
+                <div className="text-red-500 mr-3">
+                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                </div>
+              )}
+              {popupType === 'info' && (
+                <div className="text-blue-500 mr-3">
+                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                  </svg>
+                </div>
+              )}
+              {popupType === 'confirm' && (
+                <div className="text-yellow-500 mr-3">
+                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                </div>
+              )}
+              <h3 className={`text-lg font-semibold ${
+                popupType === 'success' ? 'text-green-700' :
+                popupType === 'error' ? 'text-red-700' :
+                popupType === 'confirm' ? 'text-yellow-700' :
+                'text-blue-700'
+              }`}>
+                {popupType === 'success' ? 'Success' :
+                 popupType === 'error' ? 'Error' :
+                 popupType === 'confirm' ? 'Confirm' :
+                 'Info'}
+              </h3>
+            </div>
+            <p className="text-gray-700 mb-6">{popupMessage}</p>
+            {popupType === 'confirm' ? (
+              <div className="flex space-x-4">
+                <button
+                  onClick={() => {
+                    setShowPopup(false);
+                    setPendingDeleteUserId(null);
+                  }}
+                  className="flex-1 py-2 px-4 rounded-md font-medium transition-colors bg-gray-500 hover:bg-gray-600 text-white"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    setShowPopup(false);
+                    confirmDeleteUser();
+                  }}
+                  className="flex-1 py-2 px-4 rounded-md font-medium transition-colors bg-red-500 hover:bg-red-600 text-white"
+                >
+                  Confirm
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => {
+                  setShowPopup(false);
+                  if (popupMessage === 'Registration successful! Please login.') {
+                    setPage('login');
+                  }
+                }}
+                className={`w-full py-2 px-4 rounded-md font-medium transition-colors ${
+                  popupType === 'success' ? 'bg-green-500 hover:bg-green-600 text-white' :
+                  popupType === 'error' ? 'bg-red-500 hover:bg-red-600 text-white' :
+                  'bg-blue-500 hover:bg-blue-600 text-white'
+                }`}
+              >
+                OK
+              </button>
+            )}
+          </motion.div>
+        </div>
+      )}
+    </>
   );
 }
