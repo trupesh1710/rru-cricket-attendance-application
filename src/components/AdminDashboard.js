@@ -357,7 +357,7 @@ export default function AdminDashboard({
         </div>
 
         {/* Statistics */}
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid md:grid-cols-2 gap-6">
           <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl shadow-xl p-6 border-2 border-blue-400 text-white text-center">
             <p className="text-lg font-black text-blue-100">TOTAL PLAYERS</p>
             <p className="text-5xl font-black mt-4 text-yellow-300">{users.filter(u => u.role === 'user').length}</p>
@@ -365,15 +365,6 @@ export default function AdminDashboard({
           <div className="bg-gradient-to-br from-green-600 to-green-700 rounded-2xl shadow-xl p-6 border-2 border-green-400 text-white text-center">
             <p className="text-lg font-black text-green-100">TOTAL ATTENDANCE</p>
             <p className="text-5xl font-black mt-4 text-yellow-300">{attendance.length}</p>
-          </div>
-          <div className="bg-gradient-to-br from-purple-600 to-purple-700 rounded-2xl shadow-xl p-6 border-2 border-purple-400 text-white text-center">
-            <p className="text-lg font-black text-purple-100">AVG PER PLAYER</p>
-            <p className="text-5xl font-black mt-4 text-yellow-300">
-              {(() => {
-                const playerCount = users.filter(u => u.role === 'user').length;
-                return playerCount > 0 ? (attendance.length / playerCount).toFixed(1) : 0;
-              })()}
-            </p>
           </div>
         </div>
       </div>

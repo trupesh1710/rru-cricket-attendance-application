@@ -26,7 +26,7 @@ export default function UserDashboard({
         <div className="max-w-6xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-3">
             <img src="/rru-logo.png" alt="RRU Logo" className="w-8 h-8" />
-            <h1 className="text-3xl font-black">RRU CRICKET</h1>
+            <h1 className="text-2xl font-black">RRU CRICKET</h1>
           </div>
           <button
             onClick={() => {
@@ -42,9 +42,9 @@ export default function UserDashboard({
 
       <div className="max-w-6xl mx-auto p-4 space-y-6 pb-10">
         <div className="bg-gradient-to-r from-orange-500 to-red-600 rounded-2xl shadow-xl p-8 text-white border-4 border-orange-300">
-          <h2 className="text-4xl font-black mb-2">Welcome Back, {currentUser.name}! 🎉</h2>
-          <p className="text-lg opacity-90">Ready to mark your attendance today?</p>
-          <div className="mt-4 text-sm opacity-75">Email: {currentUser.email}</div>
+          <h2 className="text-2xl font-black mb-2">Welcome Back, {currentUser.name}! 🎉</h2>
+          <p className="text-md opacity-90">Ready to mark your attendance today?</p>
+          <div className="mt-3 text-sm opacity-75">Email: {currentUser.email}</div>
         </div>
 
         <div className="grid md:grid-cols-2 gap-6">
