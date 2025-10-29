@@ -219,6 +219,18 @@ export default function AttendanceApp() {
       setShowPopup(true);
       return;
     }
+    if (!registerForm.email.endsWith('@rru.ac.in')) {
+      setPopupMessage('Email must be from @rru.ac.in domain');
+      setPopupType('error');
+      setShowPopup(true);
+      return;
+    }
+    if (registerForm.password.length <= 6) {
+      setPopupMessage('Password must be more than 6 characters');
+      setPopupType('error');
+      setShowPopup(true);
+      return;
+    }
 
     try {
       // Check if email already exists
