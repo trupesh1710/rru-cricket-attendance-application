@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import LoginPage from './components/LoginPage';
 import RegisterPage from './components/RegisterPage';
 import UserDashboard from './components/UserDashboard';
@@ -17,6 +18,8 @@ if (!supabaseAnonKey) {
 }
 
 export default function AttendanceApp() {
+  const navigate = useNavigate();
+
   // Global state
   const [isAdmin, setIsAdmin] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
@@ -84,12 +87,11 @@ export default function AttendanceApp() {
   }, []);
 
   // UI State
-  const [page, setPage] = useState('login');
   const [showPassword, setShowPassword] = useState({});
   const [userLocation, setUserLocation] = useState(null);
   const [locationError, setLocationError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  // const [error, setError] = useState('');
   const [showPopup, setShowPopup] = useState(false);
   const [popupMessage, setPopupMessage] = useState('');
   const [popupType, setPopupType] = useState('success'); // 'success', 'error', 'info', 'confirm'
@@ -193,7 +195,7 @@ export default function AttendanceApp() {
       }
 
       setCurrentUser(data);
-      setPage('user-dashboard');
+      navigate('/user-dashboard');
       setLoginForm({ email: '', password: '' });
     } catch (err) {
       setPopupMessage('Login failed: ' + err.message);
@@ -348,7 +350,7 @@ export default function AttendanceApp() {
       }
 
       setIsAdmin(true);
-      setPage('admin-dashboard');
+      navigate('/admin-dashboard');
       setAdminLogin({ username: '', password: '' });
     } catch (err) {
       setPopupMessage('Admin login failed: ' + err.message);
@@ -505,9 +507,7 @@ export default function AttendanceApp() {
       setPopupMessage('Attendance session settings saved successfully!');
       setPopupType('success');
       setShowPopup(true);
-      setError('');
     } catch (err) {
-      setError(err.message);
       setPopupMessage('Failed to save attendance session settings: ' + err.message);
       setPopupType('error');
       setShowPopup(true);
@@ -518,69 +518,101 @@ export default function AttendanceApp() {
 
   return (
     <>
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={page}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.5, ease: "easeInOut" }}
-        >
-          {page === 'login' && (
-            <LoginPage loginForm={loginForm} setLoginForm={setLoginForm} showPassword={showPassword} setShowPassword={setShowPassword} handleUserLogin={handleUserLogin} setPage={setPage} loading={loading} />
-          )}
-
-          {page === 'register' && (
-            <RegisterPage registerForm={registerForm} setRegisterForm={setRegisterForm} showPassword={showPassword} setShowPassword={setShowPassword} handleUserRegister={handleUserRegister} setPage={setPage} />
-          )}
-
-          {page === 'user-dashboard' && currentUser && (
-            <UserDashboard
-              currentUser={currentUser}
-              setCurrentUser={setCurrentUser}
-              setPage={setPage}
-              attendance={attendance}
-              attendanceSession={attendanceSession}
-              userLocation={userLocation}
-              setUserLocation={setUserLocation}
-              locationError={locationError}
-              setLocationError={setLocationError}
-              getUserLocation={getUserLocation}
-              calculateDistance={calculateDistance}
-              handleMarkAttendance={handleMarkAttendance}
-              handleCombinedAction={handleCombinedAction}
-            />
-          )}
-
-          {page === 'admin-login' && (
-            <AdminLoginPage adminLogin={adminLogin} setAdminLogin={setAdminLogin} showPassword={showPassword} setShowPassword={setShowPassword} handleAdminLogin={handleAdminLogin} setPage={setPage} loading={loading} />
-          )}
-
-          {page === 'admin-dashboard' && isAdmin && (
-            <AdminDashboard
-              setIsAdmin={setIsAdmin}
-              setPage={setPage}
-              users={users}
-              setUsers={setUsers}
-              attendance={attendance}
-              setAttendance={setAttendance}
-              attendanceSession={attendanceSession}
-              setAttendanceSession={setAttendanceSession}
-              newUserForm={newUserForm}
-              setNewUserForm={setNewUserForm}
-              handleAddUser={handleAddUser}
-              handleDeleteUser={handleDeleteUser}
-              handleEditUser={handleEditUser}
-              handleSaveEdit={handleSaveEdit}
-              editUser={editUser}
-              setEditUser={setEditUser}
-              editForm={editForm}
-              setEditForm={setEditForm}
-              saveAttendanceSession={saveAttendanceSession}
-            />
-          )}
-        </motion.div>
-      </AnimatePresence>
+      <Routes>
+        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="/login" element={
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5, ease: "easeInOut" }}
+          >
+            <LoginPage loginForm={loginForm} setLoginForm={setLoginForm} showPassword={showPassword} setShowPassword={setShowPassword} handleUserLogin={handleUserLogin} navigate={navigate} loading={loading} />
+          </motion.div>
+        } />
+        <Route path="/register" element={
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5, ease: "easeInOut" }}
+          >
+            <RegisterPage registerForm={registerForm} setRegisterForm={setRegisterForm} showPassword={showPassword} setShowPassword={setShowPassword} handleUserRegister={handleUserRegister} navigate={navigate} />
+          </motion.div>
+        } />
+        <Route path="/user-dashboard" element={
+          currentUser ? (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.5, ease: "easeInOut" }}
+            >
+              <UserDashboard
+                currentUser={currentUser}
+                setCurrentUser={setCurrentUser}
+                navigate={navigate}
+                attendance={attendance}
+                attendanceSession={attendanceSession}
+                userLocation={userLocation}
+                setUserLocation={setUserLocation}
+                locationError={locationError}
+                setLocationError={setLocationError}
+                getUserLocation={getUserLocation}
+                calculateDistance={calculateDistance}
+                handleMarkAttendance={handleMarkAttendance}
+                handleCombinedAction={handleCombinedAction}
+              />
+            </motion.div>
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        } />
+        <Route path="/admin-login" element={
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5, ease: "easeInOut" }}
+          >
+            <AdminLoginPage adminLogin={adminLogin} setAdminLogin={setAdminLogin} showPassword={showPassword} setShowPassword={setShowPassword} handleAdminLogin={handleAdminLogin} navigate={navigate} loading={loading} />
+          </motion.div>
+        } />
+        <Route path="/admin-dashboard" element={
+          isAdmin ? (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.5, ease: "easeInOut" }}
+            >
+              <AdminDashboard
+                setIsAdmin={setIsAdmin}
+                navigate={navigate}
+                users={users}
+                setUsers={setUsers}
+                attendance={attendance}
+                setAttendance={setAttendance}
+                attendanceSession={attendanceSession}
+                setAttendanceSession={setAttendanceSession}
+                newUserForm={newUserForm}
+                setNewUserForm={setNewUserForm}
+                handleAddUser={handleAddUser}
+                handleDeleteUser={handleDeleteUser}
+                handleEditUser={handleEditUser}
+                handleSaveEdit={handleSaveEdit}
+                editUser={editUser}
+                setEditUser={setEditUser}
+                editForm={editForm}
+                setEditForm={setEditForm}
+                saveAttendanceSession={saveAttendanceSession}
+              />
+            </motion.div>
+          ) : (
+            <Navigate to="/admin-login" replace />
+          )
+        } />
+      </Routes>
 
       {/* Popup Modal */}
       {showPopup && (
@@ -664,7 +696,7 @@ export default function AttendanceApp() {
                 onClick={() => {
                   setShowPopup(false);
                   if (popupMessage === 'Registration successful! Please login.') {
-                    setPage('login');
+                    navigate('/login');
                   }
                 }}
                 className={`w-full py-2 px-4 rounded-md font-medium transition-colors ${

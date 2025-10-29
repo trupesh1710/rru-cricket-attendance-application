@@ -4,7 +4,7 @@ import { LogOut, MapPin, Calendar } from 'lucide-react';
 export default function UserDashboard({
   currentUser,
   setCurrentUser,
-  setPage,
+  navigate,
   attendance,
   attendanceSession,
   userLocation,
@@ -31,7 +31,7 @@ export default function UserDashboard({
           <button
             onClick={() => {
               setCurrentUser(null);
-              setPage('login');
+              navigate('/');
             }}
             className="flex items-center gap-2 bg-red-700 px-5 py-2 rounded-full hover:bg-red-800 font-bold shadow-lg"
           >

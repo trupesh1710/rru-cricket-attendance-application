@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { LogOut, Plus, Users, Calendar, Edit2, Trash2, Zap, Download, Eye, EyeOff } from 'lucide-react';
+import { LogOut, Plus, Users, Calendar, Edit2, Trash2, Download, Eye, EyeOff } from 'lucide-react';
 import * as XLSX from 'xlsx';
 
 export default function AdminDashboard({
   setIsAdmin,
-  setPage,
+  navigate,
   users,
   setUsers,
   attendance,
@@ -55,7 +55,7 @@ export default function AdminDashboard({
           <button
             onClick={() => {
               setIsAdmin(false);
-              setPage('login');
+              navigate('/admin-login');
             }}
             className="flex items-center gap-2 bg-red-700 px-5 py-2 rounded-full hover:bg-red-800 font-bold shadow-lg"
           >

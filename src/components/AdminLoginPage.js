@@ -1,7 +1,7 @@
 import React from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 
-export default function AdminLoginPage({ adminLogin, setAdminLogin, showPassword, setShowPassword, handleAdminLogin, setPage, loading }) {
+export default function AdminLoginPage({ adminLogin, setAdminLogin, showPassword, setShowPassword, handleAdminLogin, navigate, loading }) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black flex items-center justify-center p-4 relative overflow-hidden">
       <div className="absolute inset-0 opacity-10">
@@ -51,7 +51,7 @@ export default function AdminLoginPage({ adminLogin, setAdminLogin, showPassword
         </div>
 
         <button
-          onClick={() => setPage('login')}
+          onClick={() => navigate('/login')}
           className="w-full mt-4 text-orange-400 hover:text-orange-300 font-semibold underline"
         >
           Back to User Login

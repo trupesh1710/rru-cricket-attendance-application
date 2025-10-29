@@ -1,8 +1,15 @@
-# TODO: Add Excel Download with Date Filter to Admin Dashboard
+# TODO: Implement Client-Side Routing for Admin Login Separation
 
-- [x] Install 'xlsx' library via npm
-- [x] Add useState for filterDate in AdminDashboard component
-- [x] Add date input field in Attendance Records section for filtering
-- [x] Modify attendance table to display filtered records based on selected date
-- [x] Add "Download Excel" button that exports filtered data to Excel file
-- [x] Implement download function using XLSX to generate file with columns: Player Name, Date, Time, Status, Location
+## Steps to Complete
+
+- [x] Install react-router-dom dependency
+- [x] Modify src/index.js to wrap App with BrowserRouter
+- [ ] Refactor src/App.js to use React Router (remove page state, add routes, use useNavigate)
+- [ ] Update src/components/LoginPage.js to use navigate instead of setPage
+- [ ] Update src/components/RegisterPage.js to use navigate instead of setPage
+- [ ] Update src/components/AdminLoginPage.js to use navigate instead of setPage
+- [ ] Update src/components/UserDashboard.js to use navigate instead of setPage
+- [ ] Update src/components/AdminDashboard.js to use navigate instead of setPage
+- [ ] Run npm install after adding dependency
+- [ ] Test locally with npm start
+- [ ] Build and deploy to verify Netlify routing

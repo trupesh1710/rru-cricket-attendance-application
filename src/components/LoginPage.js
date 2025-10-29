@@ -1,7 +1,7 @@
 import React from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 
-export default function LoginPage({ loginForm, setLoginForm, showPassword, setShowPassword, handleUserLogin, setPage, loading }) {
+export default function LoginPage({ loginForm, setLoginForm, showPassword, setShowPassword, handleUserLogin, navigate, loading }) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-600 via-red-600 to-yellow-500 flex items-center justify-center p-4 relative overflow-hidden">
       <div className="absolute top-10 left-10 w-20 h-20 bg-red-700 rounded-full opacity-20 animate-bounce"></div>
@@ -52,21 +52,14 @@ export default function LoginPage({ loginForm, setLoginForm, showPassword, setSh
 
         <div className="mt-6 space-y-3">
           <button
-            onClick={() => setPage('register')}
+            onClick={() => navigate('/register')}
             className="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white py-2 rounded-lg hover:from-green-600 hover:to-emerald-700 font-semibold shadow-md"
           >
             Join The Team
           </button>
         </div>
 
-        <div className="mt-8 pt-6 border-t-2 border-gray-300">
-          <button
-            onClick={() => setPage('admin-login')}
-            className="w-full bg-gradient-to-r from-gray-800 to-gray-900 text-white py-2 rounded-lg hover:from-gray-900 hover:to-black font-semibold shadow-lg"
-          >
-            ⚙️ Admin Panel
-          </button>
-        </div>
+
       </div>
     </div>
   );
