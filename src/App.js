@@ -175,6 +175,7 @@ export default function AttendanceApp() {
 
   // USER FUNCTIONS
   const handleUserLogin = async () => {
+    setLoading(true);
     try {
       const { data, error } = await supabase
         .from('users')
@@ -198,6 +199,8 @@ export default function AttendanceApp() {
       setPopupMessage('Login failed: ' + err.message);
       setPopupType('error');
       setShowPopup(true);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -327,6 +330,7 @@ export default function AttendanceApp() {
 
   // ADMIN FUNCTIONS
   const handleAdminLogin = async () => {
+    setLoading(true);
     try {
       const { data, error } = await supabase
         .from('users')
@@ -350,6 +354,8 @@ export default function AttendanceApp() {
       setPopupMessage('Admin login failed: ' + err.message);
       setPopupType('error');
       setShowPopup(true);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -521,7 +527,7 @@ export default function AttendanceApp() {
           transition={{ duration: 0.5, ease: "easeInOut" }}
         >
           {page === 'login' && (
-            <LoginPage loginForm={loginForm} setLoginForm={setLoginForm} showPassword={showPassword} setShowPassword={setShowPassword} handleUserLogin={handleUserLogin} setPage={setPage} />
+            <LoginPage loginForm={loginForm} setLoginForm={setLoginForm} showPassword={showPassword} setShowPassword={setShowPassword} handleUserLogin={handleUserLogin} setPage={setPage} loading={loading} />
           )}
 
           {page === 'register' && (
@@ -547,7 +553,7 @@ export default function AttendanceApp() {
           )}
 
           {page === 'admin-login' && (
-            <AdminLoginPage adminLogin={adminLogin} setAdminLogin={setAdminLogin} showPassword={showPassword} setShowPassword={setShowPassword} handleAdminLogin={handleAdminLogin} setPage={setPage} />
+            <AdminLoginPage adminLogin={adminLogin} setAdminLogin={setAdminLogin} showPassword={showPassword} setShowPassword={setShowPassword} handleAdminLogin={handleAdminLogin} setPage={setPage} loading={loading} />
           )}
 
           {page === 'admin-dashboard' && isAdmin && (

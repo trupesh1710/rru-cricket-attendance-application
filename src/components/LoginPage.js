@@ -1,7 +1,7 @@
 import React from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 
-export default function LoginPage({ loginForm, setLoginForm, showPassword, setShowPassword, handleUserLogin, setPage }) {
+export default function LoginPage({ loginForm, setLoginForm, showPassword, setShowPassword, handleUserLogin, setPage, loading }) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-600 via-red-600 to-yellow-500 flex items-center justify-center p-4 relative overflow-hidden">
       <div className="absolute top-10 left-10 w-20 h-20 bg-red-700 rounded-full opacity-20 animate-bounce"></div>
@@ -43,9 +43,10 @@ export default function LoginPage({ loginForm, setLoginForm, showPassword, setSh
           </div>
           <button
             onClick={handleUserLogin}
-            className="w-full bg-gradient-to-r from-orange-600 to-red-600 text-white py-3 rounded-lg hover:from-orange-700 hover:to-red-700 font-bold text-lg shadow-lg transform hover:scale-105 transition"
+            disabled={loading}
+            className="w-full bg-gradient-to-r from-orange-600 to-red-600 text-white py-3 rounded-lg hover:from-orange-700 hover:to-red-700 font-bold text-lg shadow-lg transform hover:scale-105 transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            🏏 LOGIN TO GROUND
+            {loading ? 'Logging in...' : '🏏 LOGIN TO GROUND'}
           </button>
         </div>
 

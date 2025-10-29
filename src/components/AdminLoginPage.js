@@ -1,7 +1,7 @@
 import React from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 
-export default function AdminLoginPage({ adminLogin, setAdminLogin, showPassword, setShowPassword, handleAdminLogin, setPage }) {
+export default function AdminLoginPage({ adminLogin, setAdminLogin, showPassword, setShowPassword, handleAdminLogin, setPage, loading }) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black flex items-center justify-center p-4 relative overflow-hidden">
       <div className="absolute inset-0 opacity-10">
@@ -43,9 +43,10 @@ export default function AdminLoginPage({ adminLogin, setAdminLogin, showPassword
           </div>
           <button
             onClick={handleAdminLogin}
-            className="w-full bg-gradient-to-r from-orange-600 to-red-600 text-white py-3 rounded-lg hover:from-orange-700 hover:to-red-700 font-bold text-lg shadow-lg transform hover:scale-105 transition"
+            disabled={loading}
+            className="w-full bg-gradient-to-r from-orange-600 to-red-600 text-white py-3 rounded-lg hover:from-orange-700 hover:to-red-700 font-bold text-lg shadow-lg transform hover:scale-105 transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            🔓 ENTER ADMIN PANEL
+            {loading ? 'Logging in...' : '🔓 ENTER ADMIN PANEL'}
           </button>
         </div>
 
